@@ -2,7 +2,7 @@
   "id": "./",
   "name": "211U — Dual Player",
   "short_name": "Dual Player",
-  "description": "Два трека SoundCloud. Одно звучание. Запусти их вместе.",
+  "description": "Two SoundCloud tracks. One sound. Play them together.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

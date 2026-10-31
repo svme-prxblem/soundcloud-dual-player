@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="ru">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#010101">
-  <meta name="description" content="211U — Superposition Principle. Два трека SoundCloud, одно звучание.">
+  <meta name="description" content="211U — Superposition Principle. Two SoundCloud tracks, one sound.">
   <meta name="application-name" content="Dual Player">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -17,6 +17,7 @@
   <title>211U — Dual Player</title>
   <link rel="stylesheet" href="style.css">
   <script src="https://w.soundcloud.com/player/api.js"></script>
+  <script src="i18n.js" defer></script>
   <script src="app.js" defer></script>
 </head>
 <body>
@@ -33,7 +34,7 @@
   <div class="shell">
     <aside class="sidebar">
       <img class="brand-logo" src="assets/logo-sla3r.webp" width="640" height="280" alt="Mordex SLA3R">
-      <nav class="side-nav" aria-label="Разделы">
+      <nav class="side-nav" aria-label="Sections" data-i18n-attr="aria-label:nav.label">
         <a class="side-link" href="#top" aria-current="page">
           <svg class="icon" aria-hidden="true"><use href="#i-wave"/></svg>
           <span>Dual Player</span>
@@ -53,8 +54,13 @@
     <div class="stage">
       <header class="topbar">
         <button id="installApp" class="button button-ghost install-button" hidden>
-          <svg class="icon" aria-hidden="true"><use href="#i-cloud"/></svg> Установить приложение
+          <svg class="icon" aria-hidden="true"><use href="#i-cloud"/></svg> <span data-i18n="install">Install app</span>
         </button>
+        <div class="lang-switch" role="group" aria-label="Interface language" data-i18n-attr="aria-label:lang.group">
+          <button type="button" data-lang="en" aria-pressed="true" lang="en">EN</button>
+          <span class="lang-sep" aria-hidden="true">/</span>
+          <button type="button" data-lang="ru" aria-pressed="false" lang="ru">RU</button>
+        </div>
         <p class="crumbs"><span>211U</span><span class="crumbs-sep" aria-hidden="true">/</span><span class="crumbs-current">Superposition Principle</span></p>
       </header>
 
@@ -63,7 +69,7 @@
           <div class="hero-copy">
             <p class="release-path">MRDX / Grey Legion / 282</p>
             <h1 id="release-title"><span class="release-code">211U</span><span class="release-name">Superposition Principle</span></h1>
-            <p class="tagline">Два трека. Одно звучание.<br>Запусти их вместе.</p>
+            <p class="tagline"><span data-i18n="tagline.1">Two tracks. One sound.</span><br><span data-i18n="tagline.2">Play them together.</span></p>
           </div>
           <div class="hero-art" aria-hidden="true">
             <div class="hero-image"></div>
@@ -75,25 +81,25 @@
           <div class="section-heading">
             <div>
               <p class="panel-label">Control deck</p>
-              <h2 id="controls-title">Управление воспроизведением</h2>
+              <h2 id="controls-title" data-i18n="deck.title">Playback control</h2>
             </div>
             <div class="deck-meta">
-              <span id="status" class="status" role="status" aria-live="polite">Добавь ссылки на треки</span>
+              <span id="status" class="status" role="status" aria-live="polite">Add track links</span>
               <button id="shareLink" class="link-button" type="button" disabled>
-                <svg class="icon" aria-hidden="true"><use href="#i-link"/></svg> Ссылка на треки
+                <svg class="icon" aria-hidden="true"><use href="#i-link"/></svg> <span data-i18n="share">Share link</span>
               </button>
             </div>
           </div>
 
           <div class="transport">
             <div class="button-row">
-              <button id="playBoth" class="button button-primary" disabled><svg class="icon" aria-hidden="true"><use href="#i-play"/></svg> Запустить оба</button>
-              <button id="pauseBoth" class="button button-secondary" disabled><svg class="icon" aria-hidden="true"><use href="#i-pause"/></svg> Пауза</button>
-              <button id="resetBoth" class="button button-secondary" disabled><svg class="icon" aria-hidden="true"><use href="#i-restart"/></svg> С начала</button>
+              <button id="playBoth" class="button button-primary" disabled><svg class="icon" aria-hidden="true"><use href="#i-play"/></svg> <span data-i18n="play">Play both</span></button>
+              <button id="pauseBoth" class="button button-secondary" disabled><svg class="icon" aria-hidden="true"><use href="#i-pause"/></svg> <span data-i18n="pause">Pause</span></button>
+              <button id="resetBoth" class="button button-secondary" disabled><svg class="icon" aria-hidden="true"><use href="#i-restart"/></svg> <span data-i18n="reset">From start</span></button>
             </div>
             <div class="slider-control seek-control">
               <span class="slider-meta">
-                <label for="seekBoth">Общая позиция</label>
+                <label for="seekBoth" data-i18n="seek.label">Shared position</label>
                 <span class="seek-time"><output id="seekCurrent">0:00</output> / <span id="seekTotal">0:00</span></span>
               </span>
               <input id="seekBoth" class="range" type="range" min="0" max="0" step="100" value="0" disabled aria-valuetext="0:00">
@@ -102,53 +108,53 @@
 
           <div class="mix-grid">
             <label class="slider-control" for="volumeA">
-              <span class="slider-meta"><span>Громкость трека A</span><output id="volumeAValue">70%</output></span>
+              <span class="slider-meta"><span data-i18n="volume" data-i18n-params='{"id":"A"}'>Track A volume</span><output id="volumeAValue">70%</output></span>
               <input id="volumeA" class="range" type="range" min="0" max="100" value="70" disabled>
             </label>
             <label class="slider-control" for="volumeB">
-              <span class="slider-meta"><span>Громкость трека B</span><output id="volumeBValue">50%</output></span>
+              <span class="slider-meta"><span data-i18n="volume" data-i18n-params='{"id":"B"}'>Track B volume</span><output id="volumeBValue">50%</output></span>
               <input id="volumeB" class="range" type="range" min="0" max="100" value="50" disabled>
             </label>
           </div>
         </section>
 
-        <section class="players-grid" aria-label="SoundCloud треки">
+        <section class="players-grid" aria-label="SoundCloud tracks" data-i18n-attr="aria-label:players.label">
           <article class="track-card panel" data-track="0">
             <div class="track-header">
               <div class="track-art" id="artA"><span>A</span></div>
-              <div class="track-title"><p class="panel-label panel-label-red">Track one</p><h2 id="titleA">Первый трек</h2></div>
-              <span id="stateA" class="track-state">Не добавлен</span>
+              <div class="track-title"><p class="panel-label panel-label-red">Track one</p><h2 id="titleA">First track</h2></div>
+              <span id="stateA" class="track-state">Not added</span>
             </div>
             <form class="url-form" id="formA">
-              <label class="sr-only" for="urlA">Обычная ссылка на первый трек SoundCloud</label>
+              <label class="sr-only" for="urlA" data-i18n="url.label" data-i18n-params='{"id":"A"}'>SoundCloud link for track A</label>
               <div class="url-field">
                 <input id="urlA" class="url-input" type="url" placeholder="https://soundcloud.com/artist/track" autocomplete="url" spellcheck="false">
-                <button class="clear-button" type="button" data-clear="0" aria-label="Очистить ссылку первого трека" title="Очистить"><svg class="icon" aria-hidden="true"><use href="#i-close"/></svg></button>
+                <button class="clear-button" type="button" data-clear="0" aria-label="Clear track A link" title="Clear" data-i18n-attr="aria-label:clear.label;title:clear.title" data-i18n-params='{"id":"A"}'><svg class="icon" aria-hidden="true"><use href="#i-close"/></svg></button>
               </div>
-              <button class="button button-load" type="submit"><svg class="icon" aria-hidden="true"><use href="#i-cloud"/></svg> Загрузить</button>
+              <button class="button button-load" type="submit"><svg class="icon" aria-hidden="true"><use href="#i-cloud"/></svg> <span data-i18n="load">Load</span></button>
             </form>
-            <p class="form-message" id="messageA">Вставь обычную ссылку на трек и нажми «Загрузить».</p>
+            <p class="form-message" id="messageA">Paste a regular track link and press “Load”.</p>
             <div class="player-frame" id="frameA"></div>
-            <p class="track-time" id="timeA" aria-label="Позиция трека A">0:00 / 0:00</p>
+            <p class="track-time" id="timeA" aria-label="Track A position" data-i18n-attr="aria-label:time.label" data-i18n-params='{"id":"A"}'>0:00 / 0:00</p>
           </article>
 
           <article class="track-card panel" data-track="1">
             <div class="track-header">
               <div class="track-art" id="artB"><span>B</span></div>
-              <div class="track-title"><p class="panel-label panel-label-red">Track two</p><h2 id="titleB">Второй трек</h2></div>
-              <span id="stateB" class="track-state">Не добавлен</span>
+              <div class="track-title"><p class="panel-label panel-label-red">Track two</p><h2 id="titleB">Second track</h2></div>
+              <span id="stateB" class="track-state">Not added</span>
             </div>
             <form class="url-form" id="formB">
-              <label class="sr-only" for="urlB">Обычная ссылка на второй трек SoundCloud</label>
+              <label class="sr-only" for="urlB" data-i18n="url.label" data-i18n-params='{"id":"B"}'>SoundCloud link for track B</label>
               <div class="url-field">
                 <input id="urlB" class="url-input" type="url" placeholder="https://soundcloud.com/artist/track" autocomplete="url" spellcheck="false">
-                <button class="clear-button" type="button" data-clear="1" aria-label="Очистить ссылку второго трека" title="Очистить"><svg class="icon" aria-hidden="true"><use href="#i-close"/></svg></button>
+                <button class="clear-button" type="button" data-clear="1" aria-label="Clear track B link" title="Clear" data-i18n-attr="aria-label:clear.label;title:clear.title" data-i18n-params='{"id":"B"}'><svg class="icon" aria-hidden="true"><use href="#i-close"/></svg></button>
               </div>
-              <button class="button button-load" type="submit"><svg class="icon" aria-hidden="true"><use href="#i-cloud"/></svg> Загрузить</button>
+              <button class="button button-load" type="submit"><svg class="icon" aria-hidden="true"><use href="#i-cloud"/></svg> <span data-i18n="load">Load</span></button>
             </form>
-            <p class="form-message" id="messageB">Вставь обычную ссылку на трек и нажми «Загрузить».</p>
+            <p class="form-message" id="messageB">Paste a regular track link and press “Load”.</p>
             <div class="player-frame" id="frameB"></div>
-            <p class="track-time" id="timeB" aria-label="Позиция трека B">0:00 / 0:00</p>
+            <p class="track-time" id="timeB" aria-label="Track B position" data-i18n-attr="aria-label:time.label" data-i18n-params='{"id":"B"}'>0:00 / 0:00</p>
           </article>
         </section>
 

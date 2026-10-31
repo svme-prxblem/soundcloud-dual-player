@@ -1,4 +1,5 @@
 (() => {
+  const { t } = window.I18N;
   const status = document.querySelector("#status");
   const playButton = document.querySelector("#playBoth");
   const pauseButton = document.querySelector("#pauseBoth");
@@ -22,14 +23,14 @@
       frame: document.querySelector("#frameA"), message: document.querySelector("#messageA"),
       state: document.querySelector("#stateA"), time: document.querySelector("#timeA"),
       art: document.querySelector("#artA"), title: document.querySelector("#titleA"),
-      defaultTitle: document.querySelector("#titleA").textContent, url: "",
+      soundTitle: "", url: "", stateKey: "state.none", playingState: false, msg: null,
       widget: null, ready: false, playing: false, generation: 0,
       duration: 0, position: 0, pendingSeek: null },
     { id: "B", input: document.querySelector("#urlB"), form: document.querySelector("#formB"),
       frame: document.querySelector("#frameB"), message: document.querySelector("#messageB"),
       state: document.querySelector("#stateB"), time: document.querySelector("#timeB"),
       art: document.querySelector("#artB"), title: document.querySelector("#titleB"),
-      defaultTitle: document.querySelector("#titleB").textContent, url: "",
+      soundTitle: "", url: "", stateKey: "state.none", playingState: false, msg: null,
       widget: null, ready: false, playing: false, generation: 0,
       duration: 0, position: 0, pendingSeek: null }
   ];
@@ -64,7 +65,7 @@
     const shown = seeking ? Number(seekInput.value) : sharedPosition;
     seekCurrent.value = formatTime(shown);
     seekCurrent.textContent = formatTime(shown);
-    seekInput.setAttribute("aria-valuetext", `${formatTime(shown)} из ${formatTime(max)}`);
+    seekInput.setAttribute("aria-valuetext", t("seek.valuetext", { cur: formatTime(shown), max: formatTime(max) }));
     setFill(seekInput, max ? (shown / max) * 100 : 0);
     tracks.forEach(track => {
       const known = track.ready && track.duration > 0;
@@ -88,7 +89,7 @@
         track.widget.seekTo(track.duration);
         track.position = track.duration;
         track.pendingSeek = null;
-        updateState(track, "Завершён");
+        updateState(track, "state.finished");
         return;
       }
       track.position = ms;
@@ -111,19 +112,45 @@
     });
   }
 
-  function setStatus(message, kind = "") {
-    status.textContent = message;
+  // Status, per-track messages and states are stored as translation keys so the
+  // current text can be re-rendered when the interface language changes.
+  let statusEntry = { key: "status.empty", params: undefined, kind: "" };
+
+  function setStatus(key, kind = "", params) {
+    statusEntry = { key, params, kind };
+    status.textContent = t(key, params);
     status.className = `status ${kind}`.trim();
   }
 
-  function setMessage(track, message, kind = "") {
-    track.message.textContent = message;
+  function setMessage(track, key, kind = "") {
+    track.msg = { key, kind };
+    track.message.textContent = t(key);
     track.message.className = `form-message ${kind}`.trim();
   }
 
-  function updateState(track, message, playing = false) {
-    track.state.textContent = message;
+  function updateState(track, key, playing = false) {
+    track.stateKey = key;
+    track.playingState = playing;
+    track.state.textContent = t(key);
     track.state.classList.toggle("playing", playing);
+  }
+
+  function renderTitle(track) {
+    track.title.textContent = track.soundTitle || t(`title.${track.id}`);
+  }
+
+  function rerenderLanguage() {
+    setStatus(statusEntry.key, statusEntry.kind, statusEntry.params);
+    tracks.forEach(track => {
+      updateState(track, track.stateKey, track.playingState);
+      if (track.msg) setMessage(track, track.msg.key, track.msg.kind);
+      renderTitle(track);
+      const empty = track.frame.querySelector(".empty-player");
+      if (empty) empty.setAttribute("aria-label", t("empty.label", { id: track.id }));
+      const iframe = track.frame.querySelector("iframe");
+      if (iframe) iframe.title = t("iframe.title", { id: track.id });
+    });
+    renderSeek();
   }
 
   function bothReady() {
@@ -142,23 +169,24 @@
       input.disabled = !tracks[index].ready;
     });
 
-    if (enabled) setStatus("Оба плеера готовы", "ready");
-    else if (readyCount === 1) setStatus("Загружен 1 из 2 треков");
-    else setStatus("Добавь ссылки на треки");
+    if (enabled) setStatus("status.ready", "ready");
+    else if (readyCount === 1) setStatus("status.one");
+    else setStatus("status.empty");
   }
 
+  // Throws an Error whose message is a translation key.
   function normaliseTrackUrl(raw) {
     const value = raw.trim();
-    if (!value) throw new Error("Вставь ссылку на трек SoundCloud.");
+    if (!value) throw new Error("err.empty");
     let url;
-    try { url = new URL(value); } catch { throw new Error("Это не похоже на корректную ссылку. Вставь полный URL с https://"); }
-    if (url.protocol !== "https:") throw new Error("Для безопасности поддерживаются только ссылки https://");
+    try { url = new URL(value); } catch { throw new Error("err.invalid"); }
+    if (url.protocol !== "https:") throw new Error("err.https");
     const host = url.hostname.toLowerCase();
     if (!(host === "soundcloud.com" || host.endsWith(".soundcloud.com"))) {
-      throw new Error("Нужна ссылка с домена soundcloud.com.");
+      throw new Error("err.domain");
     }
     if (url.pathname === "/" || url.pathname.split("/").filter(Boolean).length < 2) {
-      throw new Error("Похоже, это ссылка на главную страницу, а не на конкретный трек.");
+      throw new Error("err.notTrack");
     }
     // Remove query/hash tracking parameters while preserving the actual track path.
     url.search = "";
@@ -185,12 +213,13 @@
     track.frame.replaceChildren();
     const empty = document.createElement("div");
     empty.className = "empty-player";
-    empty.setAttribute("aria-label", `Трек ${track.id} пока не загружен`);
+    empty.setAttribute("aria-label", t("empty.label", { id: track.id }));
     empty.setAttribute("role", "img");
     empty.append(buildWaveform(track.id === "A" ? 7 : 19));
     track.frame.append(empty);
     setArtwork(track, "");
-    track.title.textContent = track.defaultTitle;
+    track.soundTitle = "";
+    renderTitle(track);
   }
 
   // Decorative placeholder waveform (deterministic per track, no real audio data).
@@ -229,7 +258,7 @@
   function applySoundInfo(track, generation) {
     track.widget.getCurrentSound(sound => {
       if (generation !== track.generation || !sound) return;
-      if (sound.title) track.title.textContent = sound.title;
+      if (sound.title) { track.soundTitle = sound.title; renderTitle(track); }
       const art = sound.artwork_url || (sound.user && sound.user.avatar_url) || "";
       if (/^https:\/\//.test(art)) setArtwork(track, art.replace("-large.", "-t200x200."));
     });
@@ -244,8 +273,8 @@
     resetTrackTiming(track);
     track.input.value = "";
     showEmpty(track);
-    updateState(track, "Не добавлен");
-    setMessage(track, "Вставь обычную ссылку на трек и нажми «Загрузить».");
+    updateState(track, "state.none");
+    setMessage(track, "msg.hint");
     updateControls();
     syncSharedPosition();
   }
@@ -263,7 +292,7 @@
       trackUrl = normaliseTrackUrl(track.input.value);
     } catch (error) {
       setMessage(track, error.message, "error");
-      setStatus(`Ошибка трека ${track.id}`, "error");
+      setStatus("status.trackError", "error", { id: track.id });
       return;
     }
 
@@ -271,18 +300,19 @@
     track.url = trackUrl;
     track.input.value = trackUrl;
     setArtwork(track, "");
-    track.title.textContent = track.defaultTitle;
+    track.soundTitle = "";
+    renderTitle(track);
     track.widget = null;
     track.ready = false;
     track.playing = false;
     resetTrackTiming(track);
-    updateState(track, "Загрузка…");
-    setMessage(track, "Создаём встроенный плеер…");
+    updateState(track, "state.loading");
+    setMessage(track, "msg.creating");
     updateControls();
     syncSharedPosition();
 
     const iframe = document.createElement("iframe");
-    iframe.title = `SoundCloud — трек ${track.id}`;
+    iframe.title = t("iframe.title", { id: track.id });
     iframe.setAttribute("allow", "autoplay");
     iframe.setAttribute("scrolling", "no");
     iframe.setAttribute("frameborder", "0");
@@ -299,8 +329,8 @@
       widget.bind(SC.Widget.Events.READY, () => {
         if (generation !== track.generation) return;
         track.ready = true;
-        updateState(track, "Готов");
-        setMessage(track, "Трек загружен. Можно запускать оба.", "success");
+        updateState(track, "state.ready");
+        setMessage(track, "msg.loaded", "success");
         widget.setVolume(Number(volumeInputs[track.id === "A" ? 0 : 1].value));
         refreshDuration(track, generation);
         applySoundInfo(track, generation);
@@ -316,8 +346,8 @@
           track.pendingSeek = null;
         }
         refreshDuration(track, generation);
-        updateState(track, "Играет", true);
-        if (tracks.every(item => item.playing)) setStatus("Оба трека воспроизводятся", "ready");
+        updateState(track, "state.playing", true);
+        if (tracks.every(item => item.playing)) setStatus("status.bothPlaying", "ready");
       });
 
       widget.bind(SC.Widget.Events.PLAY_PROGRESS, data => {
@@ -330,31 +360,31 @@
         if (generation !== track.generation) return;
         track.playing = false;
         if (track.position >= track.duration && track.duration) return; // parked at end by seek
-        updateState(track, "Пауза");
-        setStatus("Воспроизведение приостановлено");
+        updateState(track, "state.paused");
+        setStatus("status.paused");
       });
 
       widget.bind(SC.Widget.Events.FINISH, () => {
         if (generation !== track.generation) return;
         track.playing = false;
         track.position = track.duration;
-        updateState(track, "Завершён");
-        setStatus(`Трек ${track.id} завершился`);
+        updateState(track, "state.finished");
+        setStatus("status.finished", "", { id: track.id });
         if (tracks.every(item => !item.playing)) groupPlaying = false;
         syncSharedPosition();
       });
 
-      setMessage(track, "Ждём готовности SoundCloud…");
+      setMessage(track, "msg.waiting");
     } catch {
       if (generation !== track.generation) return;
-      setMessage(track, "Не удалось подключить Widget API. Обнови страницу и попробуй ещё раз.", "error");
+      setMessage(track, "msg.widgetFail", "error");
     }
 
     // If the embed is blocked or the URL is unavailable, the READY event may never arrive.
     window.setTimeout(() => {
       if (generation !== track.generation || track.ready) return;
-      setMessage(track, "Плеер долго не отвечает. Проверь ссылку, доступность трека и подключение к интернету.", "error");
-      updateState(track, "Нет ответа");
+      setMessage(track, "msg.timeout", "error");
+      updateState(track, "state.noResponse");
       updateControls();
     }, 18000);
   }
@@ -384,13 +414,13 @@
       if (track.duration && sharedPosition >= track.duration) return;
       track.widget.play();
     });
-    setStatus("Отправлена команда запуска…");
+    setStatus("status.playSent");
   });
 
   pauseButton.addEventListener("click", () => {
     groupPlaying = false;
     tracks.forEach(track => { if (track.widget && track.ready) track.widget.pause(); });
-    setStatus("Отправлена команда паузы…");
+    setStatus("status.pauseSent");
   });
 
   resetButton.addEventListener("click", () => {
@@ -402,11 +432,11 @@
         track.playing = false;
         track.position = 0;
         track.pendingSeek = 0;
-        updateState(track, "С начала");
+        updateState(track, "state.restart");
       }
     });
     syncSharedPosition();
-    setStatus("Отправлена команда сброса");
+    setStatus("status.resetSent");
   });
 
   // Shared seek slider: preview time while dragging, seek both tracks on release.
@@ -419,7 +449,7 @@
     if (!bothReady()) return;
     const target = Number(seekInput.value);
     seekBoth(target);
-    setStatus(`Оба трека перемотаны на ${formatTime(target)}`);
+    setStatus("status.seeked", "", { time: formatTime(target) });
   });
   // Pointer released outside the slider without a value change.
   ["pointerup", "pointercancel", "blur"].forEach(type => {
@@ -449,14 +479,22 @@
     tracks.forEach(track => { if (track.ready && track.url) link.searchParams.set(track.id.toLowerCase(), track.url); });
     try {
       await navigator.clipboard.writeText(link.href);
-      setStatus("Ссылка на треки скопирована", "ready");
+      setStatus("status.copied", "ready");
     } catch {
-      window.prompt("Скопируй ссылку на треки:", link.href);
+      window.prompt(t("prompt.copy"), link.href);
     }
   });
 
-  tracks.forEach(track => track.title.textContent = track.defaultTitle);
+  tracks.forEach(track => {
+    setMessage(track, "msg.hint");
+    updateState(track, "state.none");
+  });
   tracks.forEach(showEmpty);
+  window.I18N.onChange(rerenderLanguage);
+  // The PWA block below reports install events through the same status line.
+  document.addEventListener("dualplayer:status", event => {
+    setStatus(event.detail.key, event.detail.kind || "");
+  });
   updateControls();
   renderSeek();
 
@@ -485,8 +523,7 @@
   if (installButton) {
     installButton.addEventListener("click", async () => {
       if (!deferredInstallPrompt) {
-        const statusNode = document.querySelector("#status");
-        if (statusNode) statusNode.textContent = "В меню браузера выбери «Установить приложение» или «Создать ярлык».";
+        document.dispatchEvent(new CustomEvent("dualplayer:status", { detail: { key: "status.installHint" } }));
         return;
       }
       deferredInstallPrompt.prompt();
@@ -498,8 +535,7 @@
 
   window.addEventListener("appinstalled", () => {
     if (installButton) installButton.hidden = true;
-    const statusNode = document.querySelector("#status");
-    if (statusNode) { statusNode.textContent = "Dual Player установлен"; statusNode.className = "status ready"; }
+    document.dispatchEvent(new CustomEvent("dualplayer:status", { detail: { key: "status.installed", kind: "ready" } }));
   });
 
   if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
