@@ -1,0 +1,9 @@
+# Local tooling (design checks, code index) — not part of the site
+.impeccable/
+.codegraph/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/

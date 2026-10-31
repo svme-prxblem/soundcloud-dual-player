@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#010101">
+  <meta name="description" content="211U — Superposition Principle. Два трека SoundCloud, одно звучание.">
+  <meta name="application-name" content="Dual Player">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Dual Player">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/svg+xml" href="icons/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
+  <link rel="preload" href="fonts/montserrat-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <title>211U — Dual Player</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://w.soundcloud.com/player/api.js"></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <svg width="0" height="0" class="sr-only" aria-hidden="true">
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 4.5v15l13-7.5z" fill="currentColor"/></symbol>
+    <symbol id="i-pause" viewBox="0 0 24 24"><path d="M7 5h3.2v14H7zM13.8 5H17v14h-3.2z" fill="currentColor"/></symbol>
+    <symbol id="i-restart" viewBox="0 0 24 24"><path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3M19.5 4v4.5H15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 14a4.5 4.5 0 0 0 6.4 0l3-3a4.5 4.5 0 0 0-6.4-6.4l-1 1M14 10a4.5 4.5 0 0 0-6.4 0l-3 3a4.5 4.5 0 0 0 6.4 6.4l1-1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-cloud" viewBox="0 0 24 24"><path d="M7 18.5h10.5a4 4 0 0 0 .6-7.95A6 6 0 0 0 6.6 9.1 4.7 4.7 0 0 0 7 18.5z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-wave" viewBox="0 0 24 24"><path d="M3 9v6M7 5v14M11 8v8M15 3v18M19 9v6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  </svg>
+
+  <div class="shell">
+    <aside class="sidebar">
+      <img class="brand-logo" src="assets/logo-sla3r.webp" width="640" height="280" alt="Mordex SLA3R">
+      <nav class="side-nav" aria-label="Разделы">
+        <a class="side-link" href="#top" aria-current="page">
+          <svg class="icon" aria-hidden="true"><use href="#i-wave"/></svg>
+          <span>Dual Player</span>
+        </a>
+        <div class="side-release">
+          <strong>211U</strong>
+          <span>Experiment 001</span>
+        </div>
+        <div class="side-scrub" aria-hidden="true"><span></span></div>
+      </nav>
+      <div class="side-art" aria-hidden="true">
+        <img class="side-wolf" src="assets/wolf-howl.webp" width="700" height="700" alt="" loading="lazy">
+        <img class="side-mordex" src="assets/logo-mordex.webp" width="600" height="303" alt="" loading="lazy">
+      </div>
+    </aside>
+
+    <div class="stage">
+      <header class="topbar">
+        <button id="installApp" class="button button-ghost install-button" hidden>
+          <svg class="icon" aria-hidden="true"><use href="#i-cloud"/></svg> Установить приложение
+        </button>
+        <p class="crumbs"><span>211U</span><span class="crumbs-sep" aria-hidden="true">/</span><span class="crumbs-current">Superposition Principle</span></p>
+      </header>
+
+      <main class="page" id="top">
+        <section class="hero" aria-labelledby="release-title">
+          <div class="hero-copy">
+            <p class="release-path">MRDX / Grey Legion / 282</p>
+            <h1 id="release-title"><span class="release-code">211U</span><span class="release-name">Superposition Principle</span></h1>
+            <p class="tagline">Два трека. Одно звучание.<br>Запусти их вместе.</p>
+          </div>
+          <div class="hero-art" aria-hidden="true">
+            <div class="hero-image"></div>
+            <p class="hero-side">Sound<br>Cloud<br>Experiment</p>
+          </div>
+        </section>
+
+        <section class="controls panel" aria-labelledby="controls-title">
+          <div class="section-heading">
+            <div>
+              <p class="panel-label">Control deck</p>
+              <h2 id="controls-title">Управление воспроизведением</h2>
+            </div>
+            <div class="deck-meta">
+              <span id="status" class="status" role="status" aria-live="polite">Добавь ссылки на треки</span>
+              <button id="shareLink" class="link-button" type="button" disabled>
+                <svg class="icon" aria-hidden="true"><use href="#i-link"/></svg> Ссылка на треки
+              </button>
+            </div>
+          </div>
+
+          <div class="transport">
+            <div class="button-row">
+              <button id="playBoth" class="button button-primary" disabled><svg class="icon" aria-hidden="true"><use href="#i-play"/></svg> Запустить оба</button>
+              <button id="pauseBoth" class="button button-secondary" disabled><svg class="icon" aria-hidden="true"><use href="#i-pause"/></svg> Пауза</button>
+              <button id="resetBoth" class="button button-secondary" disabled><svg class="icon" aria-hidden="true"><use href="#i-restart"/></svg> С начала</button>
+            </div>
+            <div class="slider-control seek-control">
+              <span class="slider-meta">
+                <label for="seekBoth">Общая позиция</label>
+                <span class="seek-time"><output id="seekCurrent">0:00</output> / <span id="seekTotal">0:00</span></span>
+              </span>
+              <input id="seekBoth" class="range" type="range" min="0" max="0" step="100" value="0" disabled aria-valuetext="0:00">
+            </div>
+          </div>
+
+          <div class="mix-grid">
+            <label class="slider-control" for="volumeA">
+              <span class="slider-meta"><span>Громкость трека A</span><output id="volumeAValue">70%</output></span>
+              <input id="volumeA" class="range" type="range" min="0" max="100" value="70" disabled>
+            </label>
+            <label class="slider-control" for="volumeB">
+              <span class="slider-meta"><span>Громкость трека B</span><output id="volumeBValue">50%</output></span>
+              <input id="volumeB" class="range" type="range" min="0" max="100" value="50" disabled>
+            </label>
+          </div>
+        </section>
+
+        <section class="players-grid" aria-label="SoundCloud треки">
+          <article class="track-card panel" data-track="0">
+            <div class="track-header">
+              <div class="track-art" id="artA"><span>A</span></div>
+              <div class="track-title"><p class="panel-label panel-label-red">Track one</p><h2 id="titleA">Первый трек</h2></div>
+              <span id="stateA" class="track-state">Не добавлен</span>
+            </div>
+            <form class="url-form" id="formA">
+              <label class="sr-only" for="urlA">Обычная ссылка на первый трек SoundCloud</label>
+              <div class="url-field">
+                <input id="urlA" class="url-input" type="url" placeholder="https://soundcloud.com/artist/track" autocomplete="url" spellcheck="false">
+                <button class="clear-button" type="button" data-clear="0" aria-label="Очистить ссылку первого трека" title="Очистить"><svg class="icon" aria-hidden="true"><use href="#i-close"/></svg></button>
+              </div>
+              <button class="button button-load" type="submit"><svg class="icon" aria-hidden="true"><use href="#i-cloud"/></svg> Загрузить</button>
+            </form>
+            <p class="form-message" id="messageA">Вставь обычную ссылку на трек и нажми «Загрузить».</p>
+            <div class="player-frame" id="frameA"></div>
+            <p class="track-time" id="timeA" aria-label="Позиция трека A">0:00 / 0:00</p>
+          </article>
+
+          <article class="track-card panel" data-track="1">
+            <div class="track-header">
+              <div class="track-art" id="artB"><span>B</span></div>
+              <div class="track-title"><p class="panel-label panel-label-red">Track two</p><h2 id="titleB">Второй трек</h2></div>
+              <span id="stateB" class="track-state">Не добавлен</span>
+            </div>
+            <form class="url-form" id="formB">
+              <label class="sr-only" for="urlB">Обычная ссылка на второй трек SoundCloud</label>
+              <div class="url-field">
+                <input id="urlB" class="url-input" type="url" placeholder="https://soundcloud.com/artist/track" autocomplete="url" spellcheck="false">
+                <button class="clear-button" type="button" data-clear="1" aria-label="Очистить ссылку второго трека" title="Очистить"><svg class="icon" aria-hidden="true"><use href="#i-close"/></svg></button>
+              </div>
+              <button class="button button-load" type="submit"><svg class="icon" aria-hidden="true"><use href="#i-cloud"/></svg> Загрузить</button>
+            </form>
+            <p class="form-message" id="messageB">Вставь обычную ссылку на трек и нажми «Загрузить».</p>
+            <div class="player-frame" id="frameB"></div>
+            <p class="track-time" id="timeB" aria-label="Позиция трека B">0:00 / 0:00</p>
+          </article>
+        </section>
+
+        <section class="about panel" aria-labelledby="about-title">
+          <div class="about-head">
+            <p>About / 211U</p>
+            <p class="about-lab">MRDX Lab</p>
+          </div>
+          <h2 id="about-title">Two inputs. One unknown.</h2>
+          <p class="about-text">211U is an audio experiment built around the interaction of two independent tracks.<br>Listen to each track separately. Combine them. Discover what exists between the two.</p>
+          <p class="about-credit">Created by SLA3R &amp; SVME_PRXBLEM</p>
+        </section>
+      </main>
+    </div>
+  </div>
+</body>
+</html>
